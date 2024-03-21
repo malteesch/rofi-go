@@ -67,10 +67,12 @@ func (e *Command) WriteTo(w io.Writer) (int64, error) {
 	} else {
 		bytesWritten += int64(b)
 	}
-	if b, err = w.Write([]byte{0x00}); err != nil {
-		return bytesWritten, err
-	} else {
-		bytesWritten += int64(b)
+	if e.hasAnyMetadata() {
+		if b, err = w.Write([]byte{0x00}); err != nil {
+			return bytesWritten, err
+		} else {
+			bytesWritten += int64(b)
+		}
 	}
 	if e.Info != "" {
 		if b, err = w.Write([]byte(fmt.Sprintf("info%c%s", 0x1f, e.Info))); err != nil {
@@ -86,4 +88,8 @@ func (e *Command) WriteTo(w io.Writer) (int64, error) {
 		bytesWritten += int64(b)
 	}
 	return bytesWritten, err
+}
+
+func (c *Command) hasAnyMetadata() bool {
+	return c.Info != ""
 }

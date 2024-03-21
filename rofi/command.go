@@ -2,7 +2,7 @@ package rofi
 
 import (
 	"context"
-	"os"
+	"io"
 )
 
 type Command struct {
@@ -12,11 +12,11 @@ type Command struct {
 	Application *Application
 }
 
-func (c *Command) run(ctx context.Context) {
+func (c *Command) run(ctx context.Context, w io.Writer) {
 	if c.Run != nil {
 		c.Run(ctx)
 	}
 	if c.Application != nil {
-		c.Application.WriteTo(os.Stdout)
+		c.Application.WriteTo(w)
 	}
 }
