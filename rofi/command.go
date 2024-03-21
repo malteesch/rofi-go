@@ -1,39 +1,21 @@
 package rofi
 
 import (
-	"context"
-	"io"
+	"os"
 )
 
 type Command struct {
 	Name        string
-	Info        *string
-	Action      func(context.Context)
-	subCommands []*Command
+	Info        string
+	Run         func()
+	Application *Application
 }
 
-type commandContainer interface {
-	commands() []*Command
-}
-
-func (c *Command) AddSubCommand(sc *Command) {
-	c.subCommands = append(c.subCommands, sc)
-}
-
-func (c *Command) Run(ctx context.Context) {
-	if c.Action != nil {
-		c.Action(ctx)
+func (c *Command) run() {
+	if c.Run != nil {
+		c.Run()
 	}
-	if len(c.subCommands) > 0 {
-		w := ctx.Value(writerContextKey).(io.Writer)
-		for _, cmd := range c.subCommands {
-			cmd.WriteTo(w)
-		}
+	if c.Application != nil {
+		c.Application.WriteTo(os.Stdout)
 	}
-}
-
-func EmptyAction(ctx context.Context) {}
-
-func (c *Command) commands() []*Command {
-	return c.subCommands
 }

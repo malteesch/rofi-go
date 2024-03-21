@@ -1,24 +1,21 @@
 package rofi
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"os"
 )
 
-const writerContextKey = "writer"
-
 type Application struct {
-	Prompt      string
-	subCommands []*Command
+	Prompt   string
+	Commands []*Command
 }
 
 func (a *Application) AddCommand(c *Command) {
-	a.subCommands = append(a.subCommands, c)
+	a.Commands = append(a.Commands, c)
 }
 
-func (a *Application) Launch(w io.Writer) {
+func (a *Application) Launch() {
+	w := os.Stdout
 	if len(os.Args) == 1 {
 		_, err := a.WriteTo(w)
 		if err != nil {
@@ -26,27 +23,22 @@ func (a *Application) Launch(w io.Writer) {
 			os.Exit(1)
 		}
 	}
-	ctx := context.Background()
 	if len(os.Args) == 2 {
 		command := findCommand(os.Args[1], a)
 		if command != nil {
-			command.Run(context.WithValue(ctx, writerContextKey, w))
+			command.run()
 		}
 	}
 }
 
-func (a *Application) commands() []*Command {
-	return a.subCommands
-}
-
-func findCommand(n string, c commandContainer) *Command {
+func findCommand(n string, c *Application) *Command {
 	var foundCommand *Command
-	for _, cmd := range c.commands() {
+	for _, cmd := range c.Commands {
 		if cmd.Name == n {
 			return cmd
 		}
-		if len(cmd.subCommands) > 0 {
-			foundCommand = findCommand(n, cmd)
+		if cmd.Application != nil {
+			foundCommand = findCommand(n, cmd.Application)
 			if foundCommand == nil {
 				continue
 			} else {
