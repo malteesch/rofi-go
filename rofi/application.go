@@ -7,6 +7,7 @@ import (
 
 type Application struct {
 	Prompt   string
+	Message  string
 	Commands []*Command
 }
 

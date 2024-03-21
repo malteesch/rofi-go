@@ -16,6 +16,14 @@ func (r *Application) WriteTo(w io.Writer) (int64, error) {
 			bytesWritten += int64(b)
 		}
 	}
+	if r.Message != "" {
+		b, err := w.Write([]byte(fmt.Sprintf("%c%s%c%s\n", 0x00, "message", 0x1f, r.Message)))
+		if err != nil {
+			return bytesWritten, err
+		} else {
+			bytesWritten += int64(b)
+		}
+	}
 	for _, v := range r.Commands {
 		b, err := v.WriteTo(w)
 		if err != nil {
