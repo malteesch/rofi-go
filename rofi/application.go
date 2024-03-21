@@ -11,10 +11,6 @@ type Application struct {
 	Commands []*Command
 }
 
-func (a *Application) AddCommand(c *Command) {
-	a.Commands = append(a.Commands, c)
-}
-
 func (a *Application) Launch() {
 	w := os.Stdout
 	if len(os.Args) == 1 {
