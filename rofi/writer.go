@@ -1,8 +1,10 @@
 package rofi
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"reflect"
 )
 
 func (r *Application) WriteTo(w io.Writer) (int64, error) {
@@ -18,6 +20,27 @@ func (r *Application) WriteTo(w io.Writer) (int64, error) {
 	}
 	if r.Message != "" {
 		b, err := w.Write([]byte(fmt.Sprintf("%c%s%c%s\n", 0x00, "message", 0x1f, r.Message)))
+		if err != nil {
+			return bytesWritten, err
+		} else {
+			bytesWritten += int64(b)
+		}
+	}
+	if r.Data != nil {
+		var (
+			data any
+			err  error
+		)
+		switch reflect.ValueOf(r.Data).Kind() {
+		case reflect.Struct:
+			data, err = json.Marshal(r.Data)
+		default:
+			data = r.Data
+		}
+		if err != nil {
+			return bytesWritten, err
+		}
+		b, err = w.Write([]byte(fmt.Sprintf("%c%s%c%s\n", 0x00, "data", 0x1f, data)))
 		if err != nil {
 			return bytesWritten, err
 		} else {
